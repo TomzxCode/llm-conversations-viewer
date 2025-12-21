@@ -7,6 +7,22 @@ export class Sidebar {
         this.container = container;
         this.currentConversationId = null;
         this.onSelectCallback = null;
+        this.allConversations = [];
+        this.searchQuery = '';
+        this.setupSearchInput();
+    }
+
+    /**
+     * Setup search input event listener
+     */
+    setupSearchInput() {
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchQuery = e.target.value.toLowerCase();
+                this.render(this.allConversations);
+            });
+        }
     }
 
     /**
@@ -27,10 +43,24 @@ export class Sidebar {
             return;
         }
 
+        // Store all conversations for filtering
+        this.allConversations = conversations;
+
+        // Filter conversations based on search query
+        let filtered = conversations;
+        if (this.searchQuery) {
+            filtered = conversations.filter(conv => this.matchesSearch(conv));
+        }
+
         // Sort by updated date (most recent first)
-        const sorted = [...conversations].sort((a, b) => b.updated - a.updated);
+        const sorted = [...filtered].sort((a, b) => b.updated - a.updated);
 
         this.container.innerHTML = '';
+
+        if (sorted.length === 0) {
+            this.renderNoResults();
+            return;
+        }
 
         const listGroup = document.createElement('div');
         listGroup.className = 'list-group list-group-flush';
@@ -110,6 +140,40 @@ export class Sidebar {
     }
 
     /**
+     * Check if conversation matches search query
+     * @param {Object} conversation - Conversation object
+     * @returns {boolean}
+     */
+    matchesSearch(conversation) {
+        const query = this.searchQuery.toLowerCase().trim();
+
+        if (!query) {
+            return true;
+        }
+
+        // Split query into individual words for order-independent matching
+        const searchWords = query.split(/\s+/).filter(word => word.length > 0);
+
+        // Check if all search words are present in the title
+        const titleLower = conversation.title.toLowerCase();
+        const titleMatches = searchWords.every(word => titleLower.includes(word));
+
+        if (titleMatches) {
+            return true;
+        }
+
+        // Search in message content - all words must be present
+        if (conversation.messages && conversation.messages.length > 0) {
+            return conversation.messages.some(message => {
+                const content = (message.content || '').toLowerCase();
+                return searchWords.every(word => content.includes(word));
+            });
+        }
+
+        return false;
+    }
+
+    /**
      * Render empty state
      */
     renderEmpty() {
@@ -121,6 +185,21 @@ export class Sidebar {
                 </svg>
                 <p class="text-muted">No conversations loaded</p>
                 <p class="small">Drop a .json or .zip file to get started</p>
+            </div>
+        `;
+    }
+
+    /**
+     * Render no search results state
+     */
+    renderNoResults() {
+        this.container.innerHTML = `
+            <div class="empty-state text-center p-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-search text-muted mb-3" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+                <p class="text-muted">No conversations found</p>
+                <p class="small">Try a different search term</p>
             </div>
         `;
     }

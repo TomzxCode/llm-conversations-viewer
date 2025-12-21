@@ -99,7 +99,7 @@ export class Sidebar {
 
         item.innerHTML = `
             <div class="d-flex w-100 justify-content-between align-items-start mb-1">
-                <h6 class="mb-1 conversation-title">${this.escapeHtml(conversation.title)}</h6>
+                <h6 class="mb-1 conversation-title">${this.highlightMatches(conversation.title)}</h6>
                 ${formatBadge}
             </div>
             <div class="d-flex w-100 justify-content-between">
@@ -249,5 +249,39 @@ export class Sidebar {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    /**
+     * Highlight search terms in text
+     * @param {string} text - Text to highlight
+     * @returns {string} - HTML with highlighted terms
+     */
+    highlightMatches(text) {
+        if (!this.searchQuery) {
+            return this.escapeHtml(text);
+        }
+
+        const searchWords = this.searchQuery.toLowerCase().trim().split(/\s+/).filter(word => word.length > 0);
+
+        // Escape the text first
+        let escapedText = this.escapeHtml(text);
+
+        // Highlight each search word
+        searchWords.forEach(word => {
+            // Create a case-insensitive regex that matches whole occurrences
+            const regex = new RegExp(`(${this.escapeRegex(word)})`, 'gi');
+            escapedText = escapedText.replace(regex, '<mark class="search-highlight">$1</mark>');
+        });
+
+        return escapedText;
+    }
+
+    /**
+     * Escape special regex characters
+     * @param {string} str
+     * @returns {string}
+     */
+    escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 }

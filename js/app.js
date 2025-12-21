@@ -134,6 +134,11 @@ class App {
         });
 
         this.state.on('conversation-selected', (conversation) => {
+            // Pass search query to chat view for highlighting
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                this.chatView.setSearchQuery(searchInput.value);
+            }
             this.chatView.render(conversation);
         });
 

@@ -9,6 +9,15 @@ export class ChatView {
         this.container = container;
         this.titleElement = document.getElementById('chat-title');
         this.metaElement = document.getElementById('chat-meta');
+        this.searchQuery = '';
+    }
+
+    /**
+     * Set search query for highlighting
+     * @param {string} query - Search query
+     */
+    setSearchQuery(query) {
+        this.searchQuery = query;
     }
 
     /**
@@ -65,6 +74,11 @@ export class ChatView {
         // Render markdown content
         const contentHtml = renderMarkdown(message.content);
         bubble.innerHTML = contentHtml;
+
+        // Apply search highlighting if there's a query
+        if (this.searchQuery) {
+            this.highlightTextInElement(bubble);
+        }
 
         // Add timestamp
         const timestamp = document.createElement('div');
@@ -140,5 +154,96 @@ export class ChatView {
             hour: '2-digit',
             minute: '2-digit'
         });
+    }
+
+    /**
+     * Highlight search terms in an element's text nodes
+     * @param {HTMLElement} element - Element to highlight in
+     */
+    highlightTextInElement(element) {
+        const searchWords = this.searchQuery.toLowerCase().trim().split(/\s+/).filter(word => word.length > 0);
+
+        if (searchWords.length === 0) {
+            return;
+        }
+
+        // Walk through all text nodes and highlight matches
+        const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode: (node) => {
+                    // Skip text nodes inside code blocks to avoid breaking syntax highlighting
+                    if (node.parentElement.tagName === 'CODE' || node.parentElement.tagName === 'PRE') {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+        );
+
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+            textNodes.push(node);
+        }
+
+        // Process each text node
+        textNodes.forEach(textNode => {
+            const text = textNode.textContent;
+            let highlightedText = text;
+            let hasMatch = false;
+
+            searchWords.forEach(word => {
+                const regex = new RegExp(`(${this.escapeRegex(word)})`, 'gi');
+                if (regex.test(highlightedText)) {
+                    hasMatch = true;
+                }
+            });
+
+            if (hasMatch) {
+                // Create a wrapper span and replace the text node
+                const wrapper = document.createElement('span');
+                wrapper.innerHTML = this.highlightText(text, searchWords);
+                textNode.replaceWith(wrapper);
+            }
+        });
+    }
+
+    /**
+     * Highlight search words in text
+     * @param {string} text - Text to highlight
+     * @param {Array<string>} searchWords - Words to highlight
+     * @returns {string} - HTML with highlighted terms
+     */
+    highlightText(text, searchWords) {
+        let result = this.escapeHtml(text);
+
+        searchWords.forEach(word => {
+            const regex = new RegExp(`(${this.escapeRegex(word)})`, 'gi');
+            result = result.replace(regex, '<mark class="search-highlight">$1</mark>');
+        });
+
+        return result;
+    }
+
+    /**
+     * Escape HTML to prevent XSS
+     * @param {string} text
+     * @returns {string}
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
+     * Escape special regex characters
+     * @param {string} str
+     * @returns {string}
+     */
+    escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 }

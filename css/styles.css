@@ -1,0 +1,331 @@
+/* Global styles */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    overflow: hidden;
+}
+
+/* Container layout */
+.container-fluid {
+    padding: 0;
+}
+
+.row {
+    margin: 0;
+}
+
+/* Sidebar styles */
+.sidebar-header {
+    background-color: #f8f9fa;
+}
+
+.conversation-item {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    transition: background-color 0.2s;
+}
+
+.conversation-item:first-child {
+    border-top: none;
+}
+
+.conversation-item:hover {
+    background-color: #f8f9fa;
+}
+
+.conversation-item.active {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.conversation-item.active .text-muted {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.conversation-item.active .badge {
+    opacity: 0.9;
+}
+
+.conversation-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Chat view styles */
+.chat-header {
+    border-bottom: 1px solid #dee2e6;
+    background-color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#chat-content {
+    background-color: #f5f5f5;
+}
+
+.messages-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Message bubbles */
+.message-wrapper {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.message-wrapper.message-user {
+    align-items: flex-end;
+}
+
+.message-wrapper.message-assistant {
+    align-items: flex-start;
+}
+
+.message-wrapper.message-system {
+    align-items: center;
+}
+
+.message-bubble {
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    max-width: 75%;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.message-bubble.user {
+    background-color: #0d6efd;
+    color: white;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.message-bubble.assistant {
+    background-color: white;
+    color: #212529;
+    border-bottom-left-radius: 0.25rem;
+}
+
+.message-bubble.system {
+    background-color: #e9ecef;
+    color: #6c757d;
+    font-style: italic;
+    max-width: 85%;
+    text-align: center;
+}
+
+.message-timestamp {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+    padding: 0 0.5rem;
+}
+
+/* Markdown content styling */
+.message-bubble p {
+    margin: 0;
+}
+
+.message-bubble p + p {
+    margin-top: 0.75rem;
+}
+
+.message-bubble h1,
+.message-bubble h2,
+.message-bubble h3,
+.message-bubble h4,
+.message-bubble h5,
+.message-bubble h6 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.message-bubble h1:first-child,
+.message-bubble h2:first-child,
+.message-bubble h3:first-child,
+.message-bubble h4:first-child,
+.message-bubble h5:first-child,
+.message-bubble h6:first-child {
+    margin-top: 0;
+}
+
+.message-bubble ul,
+.message-bubble ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.message-bubble li {
+    margin: 0.25rem 0;
+}
+
+.message-bubble code {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.9em;
+}
+
+.message-bubble.user code {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.message-bubble pre {
+    background-color: #f6f8fa;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+}
+
+.message-bubble.user pre {
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+.message-bubble pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.message-bubble blockquote {
+    border-left: 4px solid #dee2e6;
+    padding-left: 1rem;
+    margin: 0.75rem 0;
+    color: #6c757d;
+}
+
+.message-bubble.user blockquote {
+    border-left-color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.message-bubble a {
+    color: #0d6efd;
+    text-decoration: underline;
+}
+
+.message-bubble.user a {
+    color: white;
+    text-decoration: underline;
+}
+
+/* Code block syntax highlighting adjustments */
+.message-bubble.user .hljs {
+    background-color: rgba(0, 0, 0, 0.15);
+    color: #f8f9fa;
+}
+
+/* Drop zone overlay */
+.drop-zone-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(13, 110, 253, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    color: white;
+}
+
+.drop-zone-overlay.active {
+    display: flex;
+}
+
+.drop-zone-content {
+    text-align: center;
+}
+
+.drop-zone-content svg {
+    margin-bottom: 1rem;
+}
+
+.drop-zone-content h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.drop-zone-content p {
+    font-size: 1.125rem;
+    opacity: 0.9;
+}
+
+/* Empty state */
+.empty-state {
+    color: #6c757d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .message-bubble {
+        max-width: 85%;
+    }
+
+    .sidebar-header h5 {
+        font-size: 1rem;
+    }
+
+    .conversation-title {
+        font-size: 0.875rem;
+    }
+
+    .chat-header h4 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Scrollbar styling for webkit browsers */
+#sidebar-content::-webkit-scrollbar,
+#chat-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#sidebar-content::-webkit-scrollbar-track,
+#chat-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#sidebar-content::-webkit-scrollbar-thumb,
+#chat-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+#sidebar-content::-webkit-scrollbar-thumb:hover,
+#chat-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Badge spacing */
+.badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Ensure code blocks don't break layout */
+.message-bubble pre {
+    max-width: 100%;
+}
+
+.message-bubble pre code {
+    white-space: pre;
+    word-wrap: normal;
+}

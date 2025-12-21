@@ -8,6 +8,7 @@ All processing happens locally in your browser - no data is sent to any server.
 - **Multi-format Support**: Automatically detects and parses both OpenAI and Claude conversation exports
 - **Drag & Drop Interface**: Simply drag and drop your export files (.json or .zip)
 - **URL Import**: Load conversations directly from a URL without persisting them locally
+- **Search & Filter**: Real-time search across conversation titles and message content with keyword highlighting
 - **Persistent Storage**: Conversations are saved in browser localStorage for future sessions
 - **Markdown Rendering**: Messages are rendered with proper markdown formatting
 - **Syntax Highlighting**: Code blocks are highlighted using highlight.js
@@ -22,7 +23,8 @@ All processing happens locally in your browser - no data is sent to any server.
    - **Upload**: Click the upload button in the sidebar
    - **Drag & Drop**: Drag and drop a .json or .zip file onto the page
    - **URL Import**: Enter a URL in the input field or use `?url=https://example.com/conversations.json`
-3. Select a conversation from the sidebar to view
+3. **Search** (optional): Use the search box to filter conversations by keywords
+4. Select a conversation from the sidebar to view
 
 > **Note**: Conversations loaded from URLs are not persisted to localStorage and will be cleared on page refresh.
 

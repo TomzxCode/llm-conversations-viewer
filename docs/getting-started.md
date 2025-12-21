@@ -78,6 +78,42 @@ The file will automatically load when the page opens.
 3. Messages are rendered with markdown formatting and syntax highlighting
 4. Scroll through the conversation history
 
+## Searching and Filtering Conversations
+
+The viewer includes a powerful search feature to help you quickly find specific conversations:
+
+### Basic Search
+
+1. Locate the search box at the top of the sidebar (below the upload section)
+2. Type your search query into the "Search conversations..." field
+3. The conversation list will automatically filter as you type
+
+### How Search Works
+
+The search feature:
+
+- **Searches multiple fields**: Looks for matches in both conversation titles and message content
+- **Word-based matching**: Splits your search query into individual words and finds conversations where all words appear
+- **Order-independent**: Words can appear in any order (e.g., searching "authentication javascript" finds conversations containing both words anywhere)
+- **Case-insensitive**: Searches work regardless of capitalization
+- **Real-time filtering**: Results update instantly as you type
+
+### Search Highlighting
+
+- When you have an active search query, matching keywords are **highlighted in yellow** within conversation titles
+- This makes it easy to see why a particular conversation matched your search
+- Multiple matching words are all highlighted independently
+
+### Examples
+
+- Search for **"header values"** to find conversations about working with HTTP headers
+- Search for **"javascript X-"** to find conversations about custom headers in JavaScript
+- Search for **"authentication"** to find all conversations related to auth topics
+
+### Clearing Search
+
+Simply clear the search box to show all conversations again.
+
 ## Managing Conversations
 
 ### Deleting Conversations

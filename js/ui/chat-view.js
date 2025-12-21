@@ -3,12 +3,14 @@
  */
 
 import { renderMarkdown } from './markdown.js';
+import { getPlatformUrl } from '../utils/platform-urls.js';
 
 export class ChatView {
     constructor(container) {
         this.container = container;
         this.titleElement = document.getElementById('chat-title');
         this.metaElement = document.getElementById('chat-meta');
+        this.continueBtn = document.getElementById('continue-conversation-btn');
         this.searchQuery = '';
     }
 
@@ -36,6 +38,15 @@ export class ChatView {
         const formatBadge = this.getFormatBadge(conversation.format);
         const dateStr = this.formatDate(conversation.updated);
         this.metaElement.innerHTML = `${formatBadge} <span class="text-muted">•</span> ${dateStr} <span class="text-muted">•</span> ${conversation.messages.length} messages`;
+
+        // Update continue conversation button
+        const platformUrl = getPlatformUrl(conversation);
+        if (platformUrl && this.continueBtn) {
+            this.continueBtn.href = platformUrl;
+            this.continueBtn.style.display = 'inline-block';
+        } else if (this.continueBtn) {
+            this.continueBtn.style.display = 'none';
+        }
 
         // Clear container and render messages
         this.container.innerHTML = '';
@@ -97,6 +108,11 @@ export class ChatView {
     renderEmpty() {
         this.titleElement.textContent = 'Welcome';
         this.metaElement.textContent = '';
+
+        // Hide continue conversation button
+        if (this.continueBtn) {
+            this.continueBtn.style.display = 'none';
+        }
 
         this.container.innerHTML = `
             <div class="empty-state text-center py-5">

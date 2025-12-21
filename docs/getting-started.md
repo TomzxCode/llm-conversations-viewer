@@ -78,6 +78,19 @@ The file will automatically load when the page opens.
 3. Messages are rendered with markdown formatting and syntax highlighting
 4. Scroll through the conversation history
 
+## Continuing Conversations
+
+Once you've viewed a conversation, you can continue it on its original platform:
+
+1. Select a conversation to view it
+2. Look for the **"Continue conversation"** button in the top-right of the chat header (next to the Export button)
+3. Click the button to open the conversation in a new tab on the original platform:
+   - **OpenAI conversations** open at `https://chatgpt.com/c/{conversation-id}`
+   - **Claude conversations** open at `https://claude.ai/chat/{conversation-id}`
+
+!!! tip "Quick Platform Access"
+    The "Continue conversation" button provides a fast way to jump from reviewing historical conversations back to actively working on them in ChatGPT or Claude.
+
 ## Searching and Filtering Conversations
 
 The viewer includes a powerful search feature to help you quickly find specific conversations:

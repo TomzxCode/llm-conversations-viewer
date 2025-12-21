@@ -29,12 +29,23 @@ Format detection and conversation parsing:
 
 **`js/utils/storage.js`**
 
-Browser localStorage persistence:
+Storage persistence wrapper using IndexedDB:
 
-- `saveConversation(conversation)` - Stores a conversation
-- `loadConversations()` - Retrieves all stored conversations
-- `deleteConversation(id)` - Removes a conversation
-- `clearAll()` - Clears all data
+- `saveConversations(conversations)` - Stores conversations (async)
+- `loadConversations()` - Retrieves all stored conversations (async)
+- `clearConversations()` - Clears all data (async)
+- `getStorageSize()` - Returns storage size in bytes (async)
+- `isAvailable()` - Checks if IndexedDB is available
+
+**`js/utils/indexeddb.js`**
+
+IndexedDB implementation providing large storage capacity (100MB+):
+
+- `init()` - Initializes database connection
+- `saveConversations(conversations)` - Stores all conversations
+- `loadConversations()` - Retrieves all conversations with date parsing
+- `clearConversations()` - Clears all stored data
+- Automatic migration from localStorage on first load
 
 **`js/utils/export.js`**
 
@@ -106,7 +117,7 @@ graph TD
     I --> K
     J --> K
     K --> L[storage.js]
-    L --> M[localStorage]
+    L --> M[IndexedDB]
     L --> N[Update UI]
     N --> O[sidebar.js]
     N --> P[chat-view.js]
@@ -135,7 +146,7 @@ graph TD
 
 Application state is managed through a combination of:
 
-1. **localStorage** - Persistent conversation data
+1. **IndexedDB** - Persistent conversation data with large storage capacity
 2. **DOM State** - Current conversation selection
 3. **Module State** - Component-level state in each module
 
@@ -151,14 +162,14 @@ No global state management library is used - state is kept minimal and local to 
 4. JSON parsed and passed to `parsers.js`
 5. Format detected and appropriate parser called
 6. Normalized conversation(s) returned
-7. Each conversation saved to localStorage
+7. Each conversation saved to IndexedDB
 8. Sidebar updated with new conversations
 
 ### Conversation View Flow
 
 1. User clicks conversation in sidebar
 2. Sidebar emits selection event
-3. App loads conversation from localStorage
+3. App loads conversation from IndexedDB
 4. Chat view renders message list
 5. Each message processed through markdown renderer
 6. Code blocks highlighted by highlight.js
@@ -210,7 +221,7 @@ Extracts files from ZIP archives in the browser.
 Requires modern browser with:
 
 - ES6 module support
-- localStorage API
+- IndexedDB API
 - File API for file reading
 - Promise support
 
@@ -233,7 +244,7 @@ Tested on:
 
 - All processing happens client-side
 - No network requests to external servers
-- Data stored only in browser localStorage
+- Data stored only in browser IndexedDB
 - No analytics or tracking
 
 ### File Validation
@@ -250,11 +261,11 @@ Tested on:
 - Lazy rendering of large conversations
 - Event delegation for dynamic content
 - Minimal DOM manipulation
-- localStorage for instant load on revisit
+- IndexedDB for instant load on revisit
 
 ### Limitations
 
-- localStorage typically limited to 5-10MB
+- IndexedDB provides 100MB+ storage capacity (vs 5-10MB for localStorage)
 - Very large conversations may impact performance
 - Browser memory limits for file processing
 

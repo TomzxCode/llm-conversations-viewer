@@ -44,7 +44,8 @@ llm-conversations-viewer/
 │   │   └── markdown.js   # Markdown renderer
 │   └── utils/
 │       ├── file-handler.js  # File upload handling
-│       └── storage.js       # localStorage wrapper
+│       ├── storage.js       # Storage persistence wrapper
+│       └── indexeddb.js    # IndexedDB implementation
 ├── docs/                  # Documentation (MkDocs)
 └── README.md
 ```

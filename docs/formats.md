@@ -197,7 +197,7 @@ This allows for:
 - Backing up conversations
 - Sharing conversations with others
 - Moving conversations between browsers
-- Archiving conversations outside of localStorage
+- Archiving conversations outside of IndexedDB
 
 ## File Formats
 

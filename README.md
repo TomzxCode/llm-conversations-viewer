@@ -11,7 +11,7 @@ All processing happens locally in your browser - no data is sent to any server.
 - **Continue Conversation**: One-click link to continue any conversation on its original platform (ChatGPT or Claude)
 - **Export Functionality**: Export single, selected, or all conversations in normalized JSON format
 - **Search & Filter**: Real-time search across conversation titles and message content with keyword highlighting
-- **Persistent Storage**: Conversations are saved in browser localStorage for future sessions
+- **Persistent Storage**: Conversations are saved in browser IndexedDB for future sessions (100MB+ capacity)
 - **Markdown Rendering**: Messages are rendered with proper markdown formatting
 - **Syntax Highlighting**: Code blocks are highlighted using highlight.js
 - **Clean UI**: Bootstrap-based responsive interface with sidebar navigation
@@ -34,7 +34,7 @@ All processing happens locally in your browser - no data is sent to any server.
    - **Export All**: Click the green download button in the sidebar to export all conversations
    - **Select All/None**: Use the "All" and "None" buttons in the sidebar to quickly select or deselect conversations
 
-> **Note**: Conversations loaded from URLs are not persisted to localStorage and will be cleared on page refresh.
+> **Note**: Conversations loaded from URLs are not persisted to IndexedDB and will be cleared on page refresh.
 
 ### Supported Import Formats
 
@@ -92,7 +92,8 @@ This format preserves the original conversation source (`format` field) and all 
 - **[js/app.js](js/app.js)** - Main application and state management
 - **[js/parsers.js](js/parsers.js)** - Format detection and conversation parsing
 - **[js/utils/file-handler.js](js/utils/file-handler.js)** - File upload and drag-drop handling
-- **[js/utils/storage.js](js/utils/storage.js)** - localStorage persistence
+- **[js/utils/storage.js](js/utils/storage.js)** - Storage persistence wrapper
+- **[js/utils/indexeddb.js](js/utils/indexeddb.js)** - IndexedDB implementation with large storage capacity
 - **[js/utils/export.js](js/utils/export.js)** - Conversation export functionality
 - **[js/utils/platform-urls.js](js/utils/platform-urls.js)** - Platform URL generation for continuing conversations
 - **[js/ui/sidebar.js](js/ui/sidebar.js)** - Conversation list UI
@@ -103,7 +104,7 @@ This format preserves the original conversation source (`format` field) and all 
 
 1. File uploaded → [file-handler.js](js/utils/file-handler.js) processes it
 2. JSON parsed → [parsers.js](js/parsers.js) detects format and normalizes data
-3. Conversations stored → [storage.js](js/utils/storage.js) saves to localStorage
+3. Conversations stored → [storage.js](js/utils/storage.js) saves to IndexedDB
 4. UI updated → Sidebar and chat view render conversations
 
 ### Normalized Format
@@ -141,7 +142,7 @@ Both OpenAI and Claude formats are converted to a common structure:
 
 All data processing happens entirely in your browser.
 No conversations or data are sent to any external servers.
-Conversations are stored locally in your browser's localStorage.
+Conversations are stored locally in your browser's IndexedDB, providing ample storage space for large conversation histories.
 
 ## Development
 

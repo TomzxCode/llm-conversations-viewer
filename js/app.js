@@ -21,18 +21,18 @@ class AppState {
     /**
      * Add conversations to state
      * @param {Array} conversations - Array of conversation objects
-     * @param {boolean} persist - Whether to save to localStorage (default: true)
+     * @param {boolean} persist - Whether to save to storage (default: true)
      */
-    addConversations(conversations, persist = true) {
+    async addConversations(conversations, persist = true) {
         // Merge new conversations, avoiding duplicates by ID
         const existingIds = new Set(this.conversations.map(c => c.id));
         const newConversations = conversations.filter(c => !existingIds.has(c.id));
 
         this.conversations = [...this.conversations, ...newConversations];
 
-        // Save to localStorage only if persist is true
+        // Save to storage only if persist is true
         if (persist) {
-            Storage.saveConversations(this.conversations);
+            await Storage.saveConversations(this.conversations);
         }
 
         this.emit('conversations-updated', this.conversations);
@@ -111,7 +111,7 @@ class App {
         this.init();
     }
 
-    init() {
+    async init() {
         // Wire up event handlers
         this.setupEventHandlers();
 
@@ -127,8 +127,8 @@ class App {
                 this.fileHandler.handleUrlLoad();
             }
         } else {
-            // Load conversations from localStorage only if no URL parameter
-            const savedConversations = Storage.loadConversations();
+            // Load conversations from storage only if no URL parameter
+            const savedConversations = await Storage.loadConversations();
             if (savedConversations.length > 0) {
                 this.state.conversations = savedConversations;
                 this.sidebar.render(savedConversations);
@@ -138,16 +138,16 @@ class App {
 
     setupEventHandlers() {
         // Listen for file drops
-        document.addEventListener('conversations-loaded', (e) => {
+        document.addEventListener('conversations-loaded', async (e) => {
             const { conversations, source, fromUrl } = e.detail;
 
             if (fromUrl) {
-                // Replace conversations without persisting to localStorage
+                // Replace conversations without persisting to storage
                 this.state.replaceConversations(conversations);
                 console.log(`Loaded ${conversations.length} conversation(s) from URL (not persisted)`);
             } else {
-                // Add conversations and persist to localStorage
-                const newCount = this.state.addConversations(conversations);
+                // Add conversations and persist to storage
+                const newCount = await this.state.addConversations(conversations);
 
                 if (newCount > 0) {
                     console.log(`Added ${newCount} new conversation(s) from ${source}`);

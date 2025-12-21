@@ -1,33 +1,49 @@
 /**
- * LocalStorage wrapper for persisting conversations
+ * Storage wrapper for persisting conversations
+ * Uses IndexedDB for large storage capacity
  */
+
+import { indexedDBStorage, IndexedDBWrapper } from './indexeddb.js';
 
 const STORAGE_KEY = 'llm-conversations';
 
 export class Storage {
     /**
-     * Save conversations to localStorage
+     * Save conversations to IndexedDB
      * @param {Array} conversations - Array of conversation objects
+     * @returns {Promise<boolean>}
      */
-    static saveConversations(conversations) {
-        try {
-            const data = JSON.stringify(conversations);
-            localStorage.setItem(STORAGE_KEY, data);
-            return true;
-        } catch (error) {
-            if (error.name === 'QuotaExceededError') {
-                console.error('localStorage quota exceeded');
-                return false;
-            }
-            throw error;
-        }
+    static async saveConversations(conversations) {
+        return await indexedDBStorage.saveConversations(conversations);
     }
 
     /**
-     * Load conversations from localStorage
-     * @returns {Array} - Array of conversation objects, or empty array if none found
+     * Load conversations from IndexedDB
+     * @returns {Promise<Array>} - Array of conversation objects, or empty array if none found
      */
-    static loadConversations() {
+    static async loadConversations() {
+        const conversations = await indexedDBStorage.loadConversations();
+
+        // If IndexedDB is empty, try migrating from localStorage
+        if (conversations.length === 0) {
+            const localConversations = this._loadFromLocalStorage();
+            if (localConversations.length > 0) {
+                console.log('Migrating conversations from localStorage to IndexedDB...');
+                await indexedDBStorage.saveConversations(localConversations);
+                // Clear localStorage after successful migration
+                localStorage.removeItem(STORAGE_KEY);
+                return localConversations;
+            }
+        }
+
+        return conversations;
+    }
+
+    /**
+     * Load conversations from localStorage (migration helper)
+     * @private
+     */
+    static _loadFromLocalStorage() {
         try {
             const data = localStorage.getItem(STORAGE_KEY);
             if (!data) {
@@ -55,33 +71,28 @@ export class Storage {
     }
 
     /**
-     * Clear all conversations from localStorage
+     * Clear all conversations from storage
+     * @returns {Promise<void>}
      */
-    static clearConversations() {
+    static async clearConversations() {
+        await indexedDBStorage.clearConversations();
+        // Also clear localStorage for cleanup
         localStorage.removeItem(STORAGE_KEY);
     }
 
     /**
-     * Check if localStorage is available and has space
+     * Check if storage is available
      * @returns {boolean}
      */
     static isAvailable() {
-        try {
-            const test = '__storage_test__';
-            localStorage.setItem(test, test);
-            localStorage.removeItem(test);
-            return true;
-        } catch (error) {
-            return false;
-        }
+        return IndexedDBWrapper.isAvailable();
     }
 
     /**
      * Get approximate size of stored data in bytes
-     * @returns {number}
+     * @returns {Promise<number>}
      */
-    static getStorageSize() {
-        const data = localStorage.getItem(STORAGE_KEY);
-        return data ? new Blob([data]).size : 0;
+    static async getStorageSize() {
+        return await indexedDBStorage.getStorageSize();
     }
 }

@@ -20,20 +20,32 @@ class AppState {
     /**
      * Add conversations to state
      * @param {Array} conversations - Array of conversation objects
+     * @param {boolean} persist - Whether to save to localStorage (default: true)
      */
-    addConversations(conversations) {
+    addConversations(conversations, persist = true) {
         // Merge new conversations, avoiding duplicates by ID
         const existingIds = new Set(this.conversations.map(c => c.id));
         const newConversations = conversations.filter(c => !existingIds.has(c.id));
 
         this.conversations = [...this.conversations, ...newConversations];
 
-        // Save to localStorage
-        Storage.saveConversations(this.conversations);
+        // Save to localStorage only if persist is true
+        if (persist) {
+            Storage.saveConversations(this.conversations);
+        }
 
         this.emit('conversations-updated', this.conversations);
 
         return newConversations.length;
+    }
+
+    /**
+     * Replace all conversations (for non-persistent URL imports)
+     * @param {Array} conversations - Array of conversation objects
+     */
+    replaceConversations(conversations) {
+        this.conversations = conversations;
+        this.emit('conversations-updated', this.conversations);
     }
 
     /**
@@ -99,27 +111,48 @@ class App {
     }
 
     init() {
-        // Load conversations from localStorage
-        const savedConversations = Storage.loadConversations();
-        if (savedConversations.length > 0) {
-            this.state.conversations = savedConversations;
-            this.sidebar.render(savedConversations);
-        }
-
         // Wire up event handlers
         this.setupEventHandlers();
+
+        // Check for URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const importUrl = urlParams.get('url');
+
+        if (importUrl) {
+            // Auto-load from URL parameter
+            const urlInput = document.getElementById('url-input');
+            if (urlInput) {
+                urlInput.value = importUrl;
+                this.fileHandler.handleUrlLoad();
+            }
+        } else {
+            // Load conversations from localStorage only if no URL parameter
+            const savedConversations = Storage.loadConversations();
+            if (savedConversations.length > 0) {
+                this.state.conversations = savedConversations;
+                this.sidebar.render(savedConversations);
+            }
+        }
     }
 
     setupEventHandlers() {
         // Listen for file drops
         document.addEventListener('conversations-loaded', (e) => {
-            const { conversations, source } = e.detail;
-            const newCount = this.state.addConversations(conversations);
+            const { conversations, source, fromUrl } = e.detail;
 
-            if (newCount > 0) {
-                console.log(`Added ${newCount} new conversation(s) from ${source}`);
+            if (fromUrl) {
+                // Replace conversations without persisting to localStorage
+                this.state.replaceConversations(conversations);
+                console.log(`Loaded ${conversations.length} conversation(s) from URL (not persisted)`);
             } else {
-                console.log('All conversations from this file were already loaded');
+                // Add conversations and persist to localStorage
+                const newCount = this.state.addConversations(conversations);
+
+                if (newCount > 0) {
+                    console.log(`Added ${newCount} new conversation(s) from ${source}`);
+                } else {
+                    console.log('All conversations from this file were already loaded');
+                }
             }
         });
 

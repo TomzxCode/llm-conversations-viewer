@@ -7,6 +7,7 @@ All processing happens locally in your browser - no data is sent to any server.
 
 - **Multi-format Support**: Automatically detects and parses both OpenAI and Claude conversation exports
 - **Drag & Drop Interface**: Simply drag and drop your export files (.json or .zip)
+- **URL Import**: Load conversations directly from a URL without persisting them locally
 - **Persistent Storage**: Conversations are saved in browser localStorage for future sessions
 - **Markdown Rendering**: Messages are rendered with proper markdown formatting
 - **Syntax Highlighting**: Code blocks are highlighted using highlight.js

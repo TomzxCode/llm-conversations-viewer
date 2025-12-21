@@ -30,24 +30,46 @@ This is a client-side web application that runs entirely in your browser.
 4. Wait for the email with your data export
 5. Download the ZIP file
 
-## Uploading Conversations
+## Loading Conversations
 
-Once you have your export files, there are two ways to upload them:
+Once you have your export files, there are three ways to load them:
 
 ### Method 1: Click to Upload
 
 1. Click the **Upload** button in the sidebar
 2. Select your `conversations.json` or `.zip` file
-3. The conversations will be automatically parsed and added to the sidebar
+3. The conversations will be automatically parsed and saved to localStorage
 
 ### Method 2: Drag and Drop
 
 1. Drag your `conversations.json` or `.zip` file from your file explorer
 2. Drop it anywhere on the page
-3. The conversations will be automatically parsed and added to the sidebar
+3. The conversations will be automatically parsed and saved to localStorage
+
+### Method 3: Load from URL
+
+You can load conversations directly from a URL without persisting them to localStorage. This is useful for sharing conversations or viewing them temporarily.
+
+**Option A: Via URL Parameter**
+
+Open the viewer with a URL parameter:
+```
+index.html?url=https://example.com/conversations.json
+```
+
+The file will automatically load when the page opens.
+
+**Option B: Via Input Field**
+
+1. Enter a URL in the "Import from URL..." field in the sidebar
+2. Click the download button or press Enter
+3. The conversations will load temporarily (not saved to localStorage)
+
+!!! info "URL Import Behavior"
+    Conversations loaded from URLs are **not persisted** to localStorage. They will be cleared when you refresh the page or load a different file. This is by design to avoid storing potentially large files from external sources.
 
 !!! tip "Batch Upload"
-    You can upload multiple files at once by selecting them together or dragging multiple files.
+    You can upload multiple files at once by selecting them together or dragging multiple files (Methods 1 & 2 only).
 
 ## Viewing Conversations
 

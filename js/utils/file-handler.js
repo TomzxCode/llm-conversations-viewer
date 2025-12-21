@@ -9,6 +9,8 @@ export class FileHandler {
         this.overlay = document.getElementById('drop-zone-overlay');
         this.fileInput = document.getElementById('file-input');
         this.uploadBtn = document.getElementById('upload-btn');
+        this.urlInput = document.getElementById('url-input');
+        this.urlLoadBtn = document.getElementById('url-load-btn');
         this.setupEventListeners();
     }
 
@@ -53,6 +55,22 @@ export class FileHandler {
                     this.handleFileSelect(files[0]);
                     // Reset input so same file can be selected again
                     this.fileInput.value = '';
+                }
+            });
+        }
+
+        // Handle URL load button click
+        if (this.urlLoadBtn) {
+            this.urlLoadBtn.addEventListener('click', () => {
+                this.handleUrlLoad();
+            });
+        }
+
+        // Handle Enter key in URL input
+        if (this.urlInput) {
+            this.urlInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.handleUrlLoad();
                 }
             });
         }
@@ -184,5 +202,100 @@ export class FileHandler {
         toast.addEventListener('hidden.bs.toast', () => {
             toast.remove();
         });
+    }
+
+    async handleUrlLoad() {
+        const url = this.urlInput.value.trim();
+
+        if (!url) {
+            this.showError('Please enter a URL');
+            return;
+        }
+
+        try {
+            this.showToast('Loading from URL...', 'info');
+
+            // Fetch the file from URL
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            const blob = await response.blob();
+
+            // Determine file type from URL or content-type
+            let fileName = url.split('/').pop() || 'download';
+
+            if (contentType?.includes('application/json') || url.endsWith('.json')) {
+                fileName = fileName.endsWith('.json') ? fileName : 'conversations.json';
+                await this.processUrlFile(blob, fileName, 'json');
+            } else if (contentType?.includes('application/zip') || url.endsWith('.zip')) {
+                fileName = fileName.endsWith('.zip') ? fileName : 'conversations.zip';
+                await this.processUrlFile(blob, fileName, 'zip');
+            } else {
+                // Try to guess from the blob
+                const text = await blob.text();
+                try {
+                    JSON.parse(text);
+                    await this.processUrlFile(blob, 'conversations.json', 'json');
+                } catch {
+                    throw new Error('Unable to determine file type. URL must point to a .json or .zip file.');
+                }
+            }
+        } catch (error) {
+            this.showError(`Error loading from URL: ${error.message}`);
+        }
+    }
+
+    async processUrlFile(blob, fileName, type) {
+        try {
+            if (type === 'json') {
+                const text = await blob.text();
+                const data = JSON.parse(text);
+                const conversations = parseConversations(data);
+
+                // Emit custom event with parsed conversations and fromUrl flag
+                const event = new CustomEvent('conversations-loaded', {
+                    detail: {
+                        conversations,
+                        source: fileName,
+                        fromUrl: true
+                    }
+                });
+                document.dispatchEvent(event);
+
+                this.showSuccess(`Loaded ${conversations.length} conversation(s) from URL`);
+            } else if (type === 'zip') {
+                const arrayBuffer = await blob.arrayBuffer();
+                const zip = await JSZip.loadAsync(arrayBuffer);
+
+                // Look for conversations.json
+                const conversationsFile = zip.file('conversations.json');
+
+                if (!conversationsFile) {
+                    throw new Error('conversations.json not found in ZIP file');
+                }
+
+                const text = await conversationsFile.async('text');
+                const data = JSON.parse(text);
+                const conversations = parseConversations(data);
+
+                // Emit custom event with parsed conversations and fromUrl flag
+                const event = new CustomEvent('conversations-loaded', {
+                    detail: {
+                        conversations,
+                        source: fileName,
+                        fromUrl: true
+                    }
+                });
+                document.dispatchEvent(event);
+
+                this.showSuccess(`Loaded ${conversations.length} conversation(s) from URL`);
+            }
+        } catch (error) {
+            throw new Error(`Error processing file: ${error.message}`);
+        }
     }
 }

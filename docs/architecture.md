@@ -21,10 +21,11 @@ Main application controller that:
 
 Format detection and conversation parsing:
 
-- `detectFormat(data)` - Identifies OpenAI vs Claude format
+- `detectFormat(data)` - Identifies format (normalized, OpenAI, or Claude)
 - `parseOpenAI(data)` - Parses OpenAI conversation trees
 - `parseClaude(data)` - Parses Claude conversation arrays
-- Normalizes both formats to common structure
+- `parseNormalized(data)` - Parses previously exported conversations
+- Normalizes all formats to common internal structure
 
 **`js/utils/storage.js`**
 
@@ -34,6 +35,15 @@ Browser localStorage persistence:
 - `loadConversations()` - Retrieves all stored conversations
 - `deleteConversation(id)` - Removes a conversation
 - `clearAll()` - Clears all data
+
+**`js/utils/export.js`**
+
+Conversation export functionality:
+
+- `exportConversations(conversations, filename)` - Exports one or more conversations as JSON
+- `generateFilename(conversations)` - Generates appropriate filename based on conversation metadata
+- Converts Date objects to ISO 8601 strings for JSON serialization
+- Creates downloadable blob and triggers browser download
 
 ### File Handling
 
@@ -52,9 +62,10 @@ Manages file uploads and drag-drop:
 
 Conversation list sidebar:
 
-- Renders conversation titles with metadata
-- Handles conversation selection
-- Provides delete functionality
+- Renders conversation titles with metadata and checkboxes
+- Handles conversation selection (for viewing)
+- Manages multi-select state for export
+- Provides select all/none controls
 - Updates when new conversations are added
 
 **`js/ui/chat-view.js`**
@@ -77,6 +88,8 @@ Markdown processing:
 
 ## Data Flow
 
+### Import Flow
+
 ```mermaid
 graph TD
     A[User Uploads File] --> B[file-handler.js]
@@ -86,16 +99,36 @@ graph TD
     E --> D
     D --> F[parsers.js]
     F --> G{Detect Format}
-    G -->|OpenAI| H[parseOpenAI]
-    G -->|Claude| I[parseClaude]
-    H --> J[Normalized Conversation]
-    I --> J
-    J --> K[storage.js]
-    K --> L[localStorage]
-    K --> M[Update UI]
-    M --> N[sidebar.js]
-    M --> O[chat-view.js]
-    O --> P[markdown.js]
+    G -->|Normalized| H[parseNormalized]
+    G -->|OpenAI| I[parseOpenAI]
+    G -->|Claude| J[parseClaude]
+    H --> K[Normalized Conversation]
+    I --> K
+    J --> K
+    K --> L[storage.js]
+    L --> M[localStorage]
+    L --> N[Update UI]
+    N --> O[sidebar.js]
+    N --> P[chat-view.js]
+    P --> Q[markdown.js]
+```
+
+### Export Flow
+
+```mermaid
+graph TD
+    A[User Clicks Export] --> B{Export Type?}
+    B -->|Single| C[Get Current Conversation]
+    B -->|Selected| D[Get Selected Conversations from Sidebar]
+    B -->|All| E[Get All Conversations]
+    C --> F[export.js]
+    D --> F
+    E --> F
+    F --> G[Convert Dates to ISO Strings]
+    G --> H[Generate JSON]
+    H --> I[Generate Filename]
+    I --> J[Create Blob]
+    J --> K[Trigger Download]
 ```
 
 ## State Management
@@ -225,6 +258,59 @@ Tested on:
 - Very large conversations may impact performance
 - Browser memory limits for file processing
 
+## Export Feature
+
+### User Interface
+
+**Single Conversation Export:**
+- Button in chat header (visible when conversation is selected)
+- Downloads conversation with sanitized filename based on title
+- Example: `getting-x-header-values-in-javascript.json`
+
+**Selected Conversations Export:**
+- Checkboxes appear next to each conversation in the sidebar
+- Blue export button appears when one or more conversations are selected
+- "All" and "None" buttons for quick selection management
+- Downloads selected conversations with timestamp-based filename
+- Selection persists while searching/filtering
+- Example: `conversations-2024-01-15T10-30-00.json`
+
+**Bulk Export:**
+- Green button in sidebar header (visible when conversations exist)
+- Downloads all conversations with timestamp-based filename
+- Example: `conversations-2024-01-15T10-30-00.json`
+
+### Export Format
+
+Exported files use the normalized format with:
+- ISO 8601 timestamps (serialized from Date objects)
+- All original metadata preserved
+- Original format indicator (`openai` or `claude`)
+- Can be directly re-imported without data loss
+
+### Implementation Details
+
+1. **Filename Generation:**
+   - Single conversation: sanitizes title, removes special characters, limits to 50 chars
+   - Multiple conversations (selected or all): uses current timestamp
+
+2. **Selection Management:**
+   - Checkbox state stored in `Set` for efficient lookups
+   - Selection persists during search/filter operations
+   - "Select All" respects current filter (only selects visible conversations)
+   - UI updates automatically when selection changes
+
+3. **Data Serialization:**
+   - Recursively converts Date objects to ISO strings
+   - Preserves all metadata exactly
+   - Pretty-prints JSON with 2-space indentation
+
+4. **Download Mechanism:**
+   - Creates Blob with `application/json` MIME type
+   - Generates temporary object URL
+   - Triggers browser download via anchor element
+   - Cleans up object URL after download
+
 ## Future Considerations
 
 Potential improvements:
@@ -232,6 +318,7 @@ Potential improvements:
 - IndexedDB for larger storage capacity
 - Virtual scrolling for huge conversations
 - Service worker for offline support
-- Export functionality
+- ZIP export with multiple conversations as separate files
 - Search within conversations
 - Conversation merge/split tools
+- Batch operations on selected conversations (delete, tag, etc.)

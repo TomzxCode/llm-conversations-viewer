@@ -1,6 +1,6 @@
 # Supported Formats
 
-LLM Conversations Viewer supports conversation exports from both OpenAI (ChatGPT) and Claude (Anthropic).
+LLM Conversations Viewer supports conversation exports from both OpenAI (ChatGPT) and Claude (Anthropic), as well as re-importing conversations that were previously exported from this app.
 This page details the expected format for each provider and how they are normalized internally.
 
 ## OpenAI (ChatGPT) Format
@@ -119,32 +119,85 @@ The parser:
 3. Converts ISO timestamps to JavaScript Date objects
 4. Preserves attachment metadata
 
-## Normalized Format
+## Normalized Format (Internal & Export)
 
-Both formats are converted to a common internal structure:
+Both OpenAI and Claude formats are converted to a common internal structure. This is also the format used when exporting conversations from this app.
+
+### Internal Structure (with Date objects)
 
 ```javascript
 {
   id: string,              // Unique conversation identifier
   title: string,           // Conversation title
-  created: Date,           // Creation timestamp
-  updated: Date,           // Last update timestamp
+  created: Date,           // Creation timestamp (Date object)
+  updated: Date,           // Last update timestamp (Date object)
   format: 'openai' | 'claude',  // Source format
+  summary?: string,        // Optional conversation summary (Claude only)
   messages: [
     {
       id: string,          // Unique message identifier
       role: 'user' | 'assistant' | 'system',  // Message role
       content: string,     // Message text content
-      timestamp: Date,     // Message timestamp
+      timestamp: Date,     // Message timestamp (Date object)
       metadata: {
         model?: string,    // Model used (OpenAI only)
         attachments?: [],  // Attachments (Claude only)
+        files?: [],        // File metadata (Claude only)
+        status?: string    // Message status (OpenAI only)
         // ... other format-specific data
       }
     }
   ]
 }
 ```
+
+### Export Format (JSON serialized)
+
+When exported, Date objects are converted to ISO 8601 strings:
+
+```json
+{
+  "id": "conv-abc123",
+  "title": "Conversation Title",
+  "created": "2024-01-15T10:30:00.000Z",
+  "updated": "2024-01-15T11:45:00.000Z",
+  "format": "openai",
+  "summary": null,
+  "messages": [
+    {
+      "id": "msg-123",
+      "role": "user",
+      "content": "Hello!",
+      "timestamp": "2024-01-15T10:30:00.000Z",
+      "metadata": {}
+    },
+    {
+      "id": "msg-124",
+      "role": "assistant",
+      "content": "Hi there! How can I help?",
+      "timestamp": "2024-01-15T10:30:15.000Z",
+      "metadata": {
+        "model": "gpt-4"
+      }
+    }
+  ]
+}
+```
+
+### Re-importing Exported Conversations
+
+Conversations exported from this app can be seamlessly re-imported:
+
+1. The format is automatically detected as `'normalized'`
+2. ISO 8601 timestamp strings are converted back to Date objects
+3. All metadata is preserved exactly as it was
+4. The original source format (`openai` or `claude`) is maintained
+
+This allows for:
+- Backing up conversations
+- Sharing conversations with others
+- Moving conversations between browsers
+- Archiving conversations outside of localStorage
 
 ## File Formats
 
@@ -166,9 +219,12 @@ The viewer can extract and process ZIP archives containing:
 
 The app automatically detects the format by examining the JSON structure:
 
-1. **OpenAI Detection**: Checks for `mapping` and `current_node` fields
-2. **Claude Detection**: Checks for `chat_messages` array
-3. **Fallback**: Shows error if format is unrecognized
+1. **Normalized Detection**: Checks for `id`, `messages`, `format`, `created`, and `updated` fields
+2. **OpenAI Detection**: Checks for `mapping` and `current_node` fields
+3. **Claude Detection**: Checks for `chat_messages` and `uuid` fields
+4. **Fallback**: Shows error if format is unrecognized
+
+Detection is performed in this order to ensure exported conversations are correctly identified before checking for original formats.
 
 ## Validation
 

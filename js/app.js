@@ -6,6 +6,7 @@ import { FileHandler } from './utils/file-handler.js';
 import { Storage } from './utils/storage.js';
 import { Sidebar } from './ui/sidebar.js';
 import { ChatView } from './ui/chat-view.js';
+import { exportConversations, generateFilename } from './utils/export.js';
 
 /**
  * Application State Manager
@@ -164,6 +165,12 @@ class App {
             if (!this.state.currentConversationId && conversations.length > 0) {
                 this.state.selectConversation(conversations[0].id);
             }
+
+            // Show/hide export all button
+            const exportAllBtn = document.getElementById('export-all-btn');
+            if (exportAllBtn) {
+                exportAllBtn.style.display = conversations.length > 0 ? 'block' : 'none';
+            }
         });
 
         this.state.on('conversation-selected', (conversation) => {
@@ -173,12 +180,88 @@ class App {
                 this.chatView.setSearchQuery(searchInput.value);
             }
             this.chatView.render(conversation);
+
+            // Show/hide export current button
+            const exportCurrentBtn = document.getElementById('export-current-btn');
+            if (exportCurrentBtn) {
+                exportCurrentBtn.style.display = conversation ? 'block' : 'none';
+            }
         });
 
         // Listen for sidebar selection
         this.sidebar.onSelect((conversationId) => {
             this.state.selectConversation(conversationId);
         });
+
+        // Listen for selection changes
+        this.sidebar.onSelectionChange((selectedIds) => {
+            const exportSelectedBtn = document.getElementById('export-selected-btn');
+            const selectionControls = document.getElementById('selection-controls');
+
+            if (exportSelectedBtn) {
+                exportSelectedBtn.style.display = selectedIds.length > 0 ? 'block' : 'none';
+            }
+            if (selectionControls) {
+                selectionControls.style.display = this.state.getConversations().length > 0 ? 'flex' : 'none';
+            }
+        });
+
+        // Export current conversation button
+        const exportCurrentBtn = document.getElementById('export-current-btn');
+        if (exportCurrentBtn) {
+            exportCurrentBtn.addEventListener('click', () => {
+                const conversation = this.state.getCurrentConversation();
+                if (conversation) {
+                    const filename = generateFilename(conversation);
+                    exportConversations(conversation, filename);
+                    console.log(`Exported conversation: ${conversation.title}`);
+                }
+            });
+        }
+
+        // Export selected conversations button
+        const exportSelectedBtn = document.getElementById('export-selected-btn');
+        if (exportSelectedBtn) {
+            exportSelectedBtn.addEventListener('click', () => {
+                const selectedIds = this.sidebar.getSelectedIds();
+                if (selectedIds.length > 0) {
+                    const selectedConversations = this.state.getConversations()
+                        .filter(conv => selectedIds.includes(conv.id));
+                    const filename = generateFilename(selectedConversations);
+                    exportConversations(selectedConversations, filename);
+                    console.log(`Exported ${selectedConversations.length} selected conversation(s)`);
+                }
+            });
+        }
+
+        // Export all conversations button
+        const exportAllBtn = document.getElementById('export-all-btn');
+        if (exportAllBtn) {
+            exportAllBtn.addEventListener('click', () => {
+                const conversations = this.state.getConversations();
+                if (conversations.length > 0) {
+                    const filename = generateFilename(conversations);
+                    exportConversations(conversations, filename);
+                    console.log(`Exported ${conversations.length} conversation(s)`);
+                }
+            });
+        }
+
+        // Select all button
+        const selectAllBtn = document.getElementById('select-all-btn');
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', () => {
+                this.sidebar.selectAll();
+            });
+        }
+
+        // Select none button
+        const selectNoneBtn = document.getElementById('select-none-btn');
+        if (selectNoneBtn) {
+            selectNoneBtn.addEventListener('click', () => {
+                this.sidebar.clearSelection();
+            });
+        }
     }
 }
 

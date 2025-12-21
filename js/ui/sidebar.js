@@ -7,8 +7,10 @@ export class Sidebar {
         this.container = container;
         this.currentConversationId = null;
         this.onSelectCallback = null;
+        this.onSelectionChangeCallback = null;
         this.allConversations = [];
         this.searchQuery = '';
+        this.selectedIds = new Set();
         this.setupSearchInput();
     }
 
@@ -31,6 +33,70 @@ export class Sidebar {
      */
     onSelect(callback) {
         this.onSelectCallback = callback;
+    }
+
+    /**
+     * Register callback for selection changes
+     * @param {Function} callback - Called with array of selected IDs
+     */
+    onSelectionChange(callback) {
+        this.onSelectionChangeCallback = callback;
+    }
+
+    /**
+     * Get selected conversation IDs
+     * @returns {Array<string>}
+     */
+    getSelectedIds() {
+        return Array.from(this.selectedIds);
+    }
+
+    /**
+     * Clear all selections
+     */
+    clearSelection() {
+        this.selectedIds.clear();
+        this.updateSelectionUI();
+        this.notifySelectionChange();
+    }
+
+    /**
+     * Select all visible conversations
+     */
+    selectAll() {
+        const filtered = this.getFilteredConversations();
+        filtered.forEach(conv => this.selectedIds.add(conv.id));
+        this.updateSelectionUI();
+        this.notifySelectionChange();
+    }
+
+    /**
+     * Get filtered conversations based on search
+     */
+    getFilteredConversations() {
+        if (!this.searchQuery) {
+            return this.allConversations;
+        }
+        return this.allConversations.filter(conv => this.matchesSearch(conv));
+    }
+
+    /**
+     * Notify listeners of selection change
+     */
+    notifySelectionChange() {
+        if (this.onSelectionChangeCallback) {
+            this.onSelectionChangeCallback(this.getSelectedIds());
+        }
+    }
+
+    /**
+     * Update checkbox UI states
+     */
+    updateSelectionUI() {
+        this.container.querySelectorAll('.conversation-checkbox').forEach(checkbox => {
+            const convId = checkbox.dataset.conversationId;
+            checkbox.checked = this.selectedIds.has(convId);
+        });
     }
 
     /**
@@ -97,21 +163,44 @@ export class Sidebar {
         // Message count
         const messageCount = conversation.messages.length;
 
+        // Checkbox state
+        const isChecked = this.selectedIds.has(conversation.id);
+
         item.innerHTML = `
-            <div class="d-flex w-100 justify-content-between align-items-start mb-1">
-                <h6 class="mb-1 conversation-title">${this.highlightMatches(conversation.title)}</h6>
-                ${formatBadge}
-            </div>
-            <div class="d-flex w-100 justify-content-between">
-                <small class="text-muted">${messageCount} messages</small>
-                <small class="text-muted">${dateStr}</small>
+            <div class="d-flex w-100 align-items-start gap-2">
+                <input type="checkbox" class="form-check-input conversation-checkbox mt-1 flex-shrink-0"
+                       data-conversation-id="${conversation.id}"
+                       ${isChecked ? 'checked' : ''}
+                       onclick="event.stopPropagation()">
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="d-flex w-100 justify-content-between align-items-start mb-1">
+                        <h6 class="mb-1 conversation-title text-truncate">${this.highlightMatches(conversation.title)}</h6>
+                        ${formatBadge}
+                    </div>
+                    <div class="d-flex w-100 justify-content-between">
+                        <small class="text-muted">${messageCount} messages</small>
+                        <small class="text-muted">${dateStr}</small>
+                    </div>
+                </div>
             </div>
         `;
 
-        // Click handler
+        // Click handler for conversation selection
         item.addEventListener('click', (e) => {
             e.preventDefault();
             this.selectConversation(conversation.id);
+        });
+
+        // Checkbox handler
+        const checkbox = item.querySelector('.conversation-checkbox');
+        checkbox.addEventListener('change', (e) => {
+            e.stopPropagation();
+            if (e.target.checked) {
+                this.selectedIds.add(conversation.id);
+            } else {
+                this.selectedIds.delete(conversation.id);
+            }
+            this.notifySelectionChange();
         });
 
         return item;

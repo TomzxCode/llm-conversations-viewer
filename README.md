@@ -8,6 +8,7 @@ All processing happens locally in your browser - no data is sent to any server.
 - **Multi-format Support**: Automatically detects and parses both OpenAI and Claude conversation exports
 - **Drag & Drop Interface**: Simply drag and drop your export files (.json or .zip)
 - **URL Import**: Load conversations directly from a URL without persisting them locally
+- **Export Functionality**: Export single, selected, or all conversations in normalized JSON format
 - **Search & Filter**: Real-time search across conversation titles and message content with keyword highlighting
 - **Persistent Storage**: Conversations are saved in browser localStorage for future sessions
 - **Markdown Rendering**: Messages are rendered with proper markdown formatting
@@ -25,10 +26,15 @@ All processing happens locally in your browser - no data is sent to any server.
    - **URL Import**: Enter a URL in the input field or use `?url=https://example.com/conversations.json`
 3. **Search** (optional): Use the search box to filter conversations by keywords
 4. Select a conversation from the sidebar to view
+5. **Export** (optional):
+   - **Export Single**: Click the "Export" button in the chat header to export the current conversation
+   - **Export Selected**: Check the boxes next to conversations in the sidebar, then click the blue export button
+   - **Export All**: Click the green download button in the sidebar to export all conversations
+   - **Select All/None**: Use the "All" and "None" buttons in the sidebar to quickly select or deselect conversations
 
 > **Note**: Conversations loaded from URLs are not persisted to localStorage and will be cleared on page refresh.
 
-### Supported Export Formats
+### Supported Import Formats
 
 **OpenAI (ChatGPT)**
 - Export format: `conversations.json` from ChatGPT data export
@@ -40,10 +46,42 @@ All processing happens locally in your browser - no data is sent to any server.
 - Linear conversation history
 - Includes attachments and files metadata
 
+**Normalized (Re-import)**
+- Conversations exported from this app can be re-imported
+- Uses a standardized format that preserves all data
+
 ### File Formats
 
 - `.json` - Direct conversation export file
 - `.zip` - Archive containing `conversations.json`
+
+### Export Format
+
+Exported conversations use a normalized JSON format that can be re-imported into the viewer:
+
+```javascript
+[
+  {
+    "id": "unique-id",
+    "title": "Conversation Title",
+    "created": "2024-01-15T10:30:00.000Z",
+    "updated": "2024-01-15T11:45:00.000Z",
+    "format": "openai" | "claude",
+    "summary": "Optional conversation summary",
+    "messages": [
+      {
+        "id": "message-id",
+        "role": "user" | "assistant" | "system",
+        "content": "Message text",
+        "timestamp": "2024-01-15T10:30:00.000Z",
+        "metadata": {}
+      }
+    ]
+  }
+]
+```
+
+This format preserves the original conversation source (`format` field) and all metadata.
 
 ## Architecture
 
@@ -53,6 +91,7 @@ All processing happens locally in your browser - no data is sent to any server.
 - **[js/parsers.js](js/parsers.js)** - Format detection and conversation parsing
 - **[js/utils/file-handler.js](js/utils/file-handler.js)** - File upload and drag-drop handling
 - **[js/utils/storage.js](js/utils/storage.js)** - localStorage persistence
+- **[js/utils/export.js](js/utils/export.js)** - Conversation export functionality
 - **[js/ui/sidebar.js](js/ui/sidebar.js)** - Conversation list UI
 - **[js/ui/chat-view.js](js/ui/chat-view.js)** - Message rendering
 - **[js/ui/markdown.js](js/ui/markdown.js)** - Markdown processing with code highlighting

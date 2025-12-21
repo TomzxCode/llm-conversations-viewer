@@ -5,7 +5,7 @@
 /**
  * Detect the format of a conversation JSON
  * @param {Array} data - Parsed JSON data
- * @returns {string} - 'openai', 'claude', or 'unknown'
+ * @returns {string} - 'openai', 'claude', 'normalized', or 'unknown'
  */
 export function detectFormat(data) {
     if (!Array.isArray(data) || data.length === 0) {
@@ -13,6 +13,12 @@ export function detectFormat(data) {
     }
 
     const first = data[0];
+
+    // Normalized format (exported from this app)
+    // Check for presence of keys, not just truthy values
+    if (first.id && first.messages && first.format && first.created && first.updated) {
+        return 'normalized';
+    }
 
     // OpenAI format has mapping and current_node
     if (first.mapping && first.current_node) {
@@ -111,6 +117,30 @@ export function parseClaude(data) {
 }
 
 /**
+ * Parse normalized conversation format (exported from this app)
+ * Converts ISO date strings back to Date objects
+ * @param {Array} data - Normalized conversation array
+ * @returns {Array} - Array of normalized conversations with Date objects
+ */
+export function parseNormalized(data) {
+    return data.map(conv => ({
+        id: conv.id,
+        title: conv.title || 'Untitled Conversation',
+        created: new Date(conv.created),
+        updated: new Date(conv.updated),
+        format: conv.format,
+        summary: conv.summary,
+        messages: conv.messages.map(msg => ({
+            id: msg.id,
+            role: msg.role,
+            content: msg.content,
+            timestamp: new Date(msg.timestamp),
+            metadata: msg.metadata || {}
+        }))
+    }));
+}
+
+/**
  * Main parsing function - auto-detects format and returns normalized conversations
  * @param {Array} data - Raw conversation JSON data
  * @returns {Array} - Array of normalized conversations
@@ -123,6 +153,8 @@ export function parseConversations(data) {
             return parseOpenAI(data);
         case 'claude':
             return parseClaude(data);
+        case 'normalized':
+            return parseNormalized(data);
         default:
             throw new Error(`Unsupported format: ${format}`);
     }

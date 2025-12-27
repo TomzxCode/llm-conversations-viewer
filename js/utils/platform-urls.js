@@ -17,6 +17,8 @@ export function getPlatformUrl(conversation) {
             return `https://chatgpt.com/c/${conversation.id}`;
         case 'claude':
             return `https://claude.ai/chat/${conversation.id}`;
+        case 'zai':
+            return `https://chat.z.ai/c/${conversation.id}`;
         default:
             return null;
     }

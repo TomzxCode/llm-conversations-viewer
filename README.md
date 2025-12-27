@@ -8,7 +8,7 @@ All processing happens locally in your browser - no data is sent to any server.
 - **Multi-format Support**: Automatically detects and parses OpenAI, Claude, and Z.ai conversation exports
 - **Drag & Drop Interface**: Simply drag and drop your export files (.json or .zip)
 - **URL Import**: Load conversations directly from a URL without persisting them locally
-- **Continue Conversation**: One-click link to continue any conversation on its original platform (ChatGPT or Claude - Z.ai)
+- **Continue Conversation**: One-click link to continue any conversation on its original platform (ChatGPT, Claude, or Z.ai)
 - **Export Functionality**: Export single, selected, or all conversations in normalized JSON format
 - **Search & Filter**: Real-time search across conversation titles and message content with keyword highlighting
 - **Persistent Storage**: Conversations are saved in browser IndexedDB for future sessions (100MB+ capacity)

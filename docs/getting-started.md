@@ -96,10 +96,10 @@ Once you've viewed a conversation, you can continue it on its original platform:
 3. Click the button to open the conversation in a new tab on the original platform:
    - **OpenAI conversations** open at `https://chatgpt.com/c/{conversation-id}`
    - **Claude conversations** open at `https://claude.ai/chat/{conversation-id}`
-   - **Z.ai conversations** - Platform URL support coming soon
+   - **Z.ai conversations** open at `https://chat.z.ai/c/{conversation-id}`
 
 !!! tip "Quick Platform Access"
-    The "Continue conversation" button provides a fast way to jump from reviewing historical conversations back to actively working on them in ChatGPT or Claude.
+    The "Continue conversation" button provides a fast way to jump from reviewing historical conversations back to actively working on them in ChatGPT, Claude, or Z.ai.
 
 ## Searching and Filtering Conversations
 

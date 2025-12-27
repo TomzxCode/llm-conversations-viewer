@@ -179,6 +179,7 @@ Test checklist:
 
 - [ ] Upload OpenAI JSON file
 - [ ] Upload Claude JSON file
+- [ ] Upload Z.ai JSON file
 - [ ] Upload ZIP with conversations.json
 - [ ] Drag and drop files
 - [ ] Select conversations from sidebar
@@ -194,6 +195,7 @@ Use the provided example files:
 
 - `openai.json` - Sample OpenAI conversation
 - `claude.json` - Sample Claude conversation
+- `z.json` - Sample Z.ai conversation
 
 ### Browser Testing
 

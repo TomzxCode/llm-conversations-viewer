@@ -1,14 +1,14 @@
 # LLM Conversations Viewer
 
-A client-side web application for viewing and browsing exported conversations from ChatGPT (OpenAI) and Claude (Anthropic).
+A client-side web application for viewing and browsing exported conversations from ChatGPT (OpenAI), Claude (Anthropic), and Z.ai.
 All processing happens locally in your browser - no data is sent to any server.
 
 ## Features
 
-- **Multi-format Support**: Automatically detects and parses both OpenAI and Claude conversation exports
+- **Multi-format Support**: Automatically detects and parses OpenAI, Claude, and Z.ai conversation exports
 - **Drag & Drop Interface**: Simply drag and drop your export files (.json or .zip)
 - **URL Import**: Load conversations directly from a URL without persisting them locally
-- **Continue Conversation**: One-click link to continue any conversation on its original platform (ChatGPT or Claude)
+- **Continue Conversation**: One-click link to continue any conversation on its original platform (ChatGPT or Claude - Z.ai)
 - **Export Functionality**: Export single, selected, or all conversations in normalized JSON format
 - **Search & Filter**: Real-time search across conversation titles and message content with keyword highlighting
 - **Persistent Storage**: Conversations are saved in browser IndexedDB for future sessions (100MB+ capacity)
@@ -48,6 +48,11 @@ All processing happens locally in your browser - no data is sent to any server.
 - Linear conversation history
 - Includes attachments and files metadata
 
+**Z.ai**
+- Export format: Z.ai conversation JSON export
+- Supports conversation trees (uses currentId path)
+- Preserves model information, usage statistics, and metadata
+
 **Normalized (Re-import)**
 - Conversations exported from this app can be re-imported
 - Uses a standardized format that preserves all data
@@ -68,7 +73,7 @@ Exported conversations use a normalized JSON format that can be re-imported into
     "title": "Conversation Title",
     "created": "2024-01-15T10:30:00.000Z",
     "updated": "2024-01-15T11:45:00.000Z",
-    "format": "openai" | "claude",
+    "format": "openai" | "claude" | "zai",
     "summary": "Optional conversation summary",
     "messages": [
       {
@@ -76,7 +81,10 @@ Exported conversations use a normalized JSON format that can be re-imported into
         "role": "user" | "assistant" | "system",
         "content": "Message text",
         "timestamp": "2024-01-15T10:30:00.000Z",
-        "metadata": {}
+        "metadata": {
+          "model": "Model name",
+          "usage": { /* Z.ai token usage stats */ }
+        }
       }
     ]
   }
@@ -109,7 +117,7 @@ This format preserves the original conversation source (`format` field) and all 
 
 ### Normalized Format
 
-Both OpenAI and Claude formats are converted to a common structure:
+All formats (OpenAI, Claude, and Z.ai) are converted to a common structure:
 
 ```javascript
 {
@@ -117,7 +125,7 @@ Both OpenAI and Claude formats are converted to a common structure:
   title: string,
   created: Date,
   updated: Date,
-  format: 'openai' | 'claude',
+  format: 'openai' | 'claude' | 'zai',
   messages: [
     {
       id: string,

@@ -301,7 +301,8 @@ export class Sidebar {
     getFormatBadge(format) {
         const badges = {
             'openai': '<span class="badge bg-success">OpenAI</span>',
-            'claude': '<span class="badge bg-primary">Claude</span>'
+            'claude': '<span class="badge bg-primary">Claude</span>',
+            'zai': '<span class="badge bg-info">Z.ai</span>'
         };
         return badges[format] || '<span class="badge bg-secondary">Unknown</span>';
     }

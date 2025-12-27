@@ -21,9 +21,10 @@ Main application controller that:
 
 Format detection and conversation parsing:
 
-- `detectFormat(data)` - Identifies format (normalized, OpenAI, or Claude)
+- `detectFormat(data)` - Identifies format (normalized, OpenAI, Claude, or Z.ai)
 - `parseOpenAI(data)` - Parses OpenAI conversation trees
 - `parseClaude(data)` - Parses Claude conversation arrays
+- `parseZai(data)` - Parses Z.ai conversation trees
 - `parseNormalized(data)` - Parses previously exported conversations
 - Normalizes all formats to common internal structure
 
@@ -113,9 +114,11 @@ graph TD
     G -->|Normalized| H[parseNormalized]
     G -->|OpenAI| I[parseOpenAI]
     G -->|Claude| J[parseClaude]
+    G -->|Z.ai| L[parseZai]
     H --> K[Normalized Conversation]
     I --> K
     J --> K
+    L --> K
     K --> L[storage.js]
     L --> M[IndexedDB]
     L --> N[Update UI]
@@ -296,7 +299,7 @@ Tested on:
 Exported files use the normalized format with:
 - ISO 8601 timestamps (serialized from Date objects)
 - All original metadata preserved
-- Original format indicator (`openai` or `claude`)
+- Original format indicator (`openai`, `claude`, or `zai`)
 - Can be directly re-imported without data loss
 
 ### Implementation Details

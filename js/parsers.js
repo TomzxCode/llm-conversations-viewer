@@ -5,7 +5,7 @@
 /**
  * Detect the format of a conversation JSON
  * @param {Array} data - Parsed JSON data
- * @returns {string} - 'openai', 'claude', 'normalized', or 'unknown'
+ * @returns {string} - 'openai', 'claude', 'zai', 'normalized', or 'unknown'
  */
 export function detectFormat(data) {
     if (!Array.isArray(data) || data.length === 0) {
@@ -28,6 +28,11 @@ export function detectFormat(data) {
     // Claude format has chat_messages and uuid
     if (first.chat_messages && first.uuid) {
         return 'claude';
+    }
+
+    // Z.ai format has chat.history.messages and chat.history.currentId
+    if (first.chat && first.chat.history && first.chat.history.messages && first.chat.history.currentId) {
+        return 'zai';
     }
 
     throw new Error('Unknown conversation format');
@@ -117,6 +122,52 @@ export function parseClaude(data) {
 }
 
 /**
+ * Parse Z.ai conversation format
+ * Extracts the current conversation path by walking from currentId backwards
+ * @param {Array} data - Z.ai conversation array
+ * @returns {Array} - Array of normalized conversations
+ */
+export function parseZai(data) {
+    return data.map(conv => {
+        const messages = [];
+        let nodeId = conv.chat.history.currentId;
+        const messageMap = conv.chat.history.messages;
+
+        // Walk backwards from currentId to root
+        while (nodeId) {
+            const node = messageMap[nodeId];
+            if (!node) break;
+
+            // Add message to the beginning of the array
+            messages.unshift({
+                id: node.id,
+                role: node.role,
+                content: node.content || '',
+                timestamp: new Date(node.timestamp * 1000),
+                metadata: {
+                    model: node.model || node.modelName,
+                    models: node.models,
+                    done: node.done,
+                    status: node.status,
+                    usage: node.usage
+                }
+            });
+
+            nodeId = node.parentId;
+        }
+
+        return {
+            id: conv.id,
+            title: conv.title || conv.chat?.title || 'Untitled Conversation',
+            created: new Date((conv.created_at || conv.chat?.timestamp / 1000) * 1000),
+            updated: new Date(conv.updated_at * 1000),
+            format: 'zai',
+            messages
+        };
+    });
+}
+
+/**
  * Parse normalized conversation format (exported from this app)
  * Converts ISO date strings back to Date objects
  * @param {Array} data - Normalized conversation array
@@ -153,6 +204,8 @@ export function parseConversations(data) {
             return parseOpenAI(data);
         case 'claude':
             return parseClaude(data);
+        case 'zai':
+            return parseZai(data);
         case 'normalized':
             return parseNormalized(data);
         default:

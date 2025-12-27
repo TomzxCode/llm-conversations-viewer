@@ -1,11 +1,11 @@
 # LLM Conversations Viewer
 
-A client-side web application for viewing and browsing exported conversations from ChatGPT (OpenAI) and Claude (Anthropic).
+A client-side web application for viewing and browsing exported conversations from ChatGPT (OpenAI), Claude (Anthropic), and Z.ai.
 All processing happens locally in your browser - no data is sent to any server.
 
 ## Features
 
-- **Multi-format Support**: Automatically detects and parses both OpenAI and Claude conversation exports
+- **Multi-format Support**: Automatically detects and parses OpenAI, Claude, and Z.ai conversation exports
 - **Drag & Drop Interface**: Simply drag and drop your export files (.json or .zip)
 - **URL Import**: Load conversations directly from a URL without persisting them locally
 - **Persistent Storage**: Conversations are saved in browser IndexedDB for future sessions (100MB+ capacity)
@@ -36,6 +36,12 @@ See [Getting Started](getting-started.md) for detailed instructions.
 - Export format: Claude conversation JSON export
 - Linear conversation history
 - Includes attachments and files metadata
+
+**Z.ai**
+
+- Export format: Z.ai conversation JSON export
+- Supports conversation trees (uses currentId path)
+- Preserves model information, usage statistics, and metadata
 
 ## Technologies
 

@@ -1,6 +1,6 @@
 # Supported Formats
 
-LLM Conversations Viewer supports conversation exports from both OpenAI (ChatGPT) and Claude (Anthropic), as well as re-importing conversations that were previously exported from this app.
+LLM Conversations Viewer supports conversation exports from OpenAI (ChatGPT), Claude (Anthropic), Z.ai, as well as re-importing conversations that were previously exported from this app.
 This page details the expected format for each provider and how they are normalized internally.
 
 ## OpenAI (ChatGPT) Format
@@ -119,9 +119,78 @@ The parser:
 3. Converts ISO timestamps to JavaScript Date objects
 4. Preserves attachment metadata
 
+## Z.ai Format
+
+### Export Structure
+
+Z.ai exports use a tree-based structure similar to OpenAI:
+
+```json
+[
+  {
+    "id": "conv-uuid-123",
+    "user_id": "user-uuid-456",
+    "title": "Conversation Title",
+    "created_at": 1699564800,
+    "updated_at": 1699568400,
+    "chat": {
+      "title": "Conversation Title",
+      "models": ["GLM-4-6-API-V1"],
+      "history": {
+        "messages": {
+          "msg-id-1": {
+            "id": "msg-id-1",
+            "parentId": null,
+            "childrenIds": ["msg-id-2"],
+            "role": "user",
+            "content": "Hello!",
+            "timestamp": 1699564800,
+            "models": ["GLM-4-6-API-V1"]
+          },
+          "msg-id-2": {
+            "id": "msg-id-2",
+            "parentId": "msg-id-1",
+            "childrenIds": [],
+            "role": "assistant",
+            "content": "Hi there! How can I help?",
+            "timestamp": 1699564820,
+            "model": "GLM-4-6-API-V1",
+            "modelName": "GLM-4.6",
+            "done": true,
+            "usage": {
+              "prompt_tokens": 10,
+              "completion_tokens": 15,
+              "total_tokens": 25
+            }
+          }
+        },
+        "currentId": "msg-id-2"
+      }
+    }
+  }
+]
+```
+
+### Key Features
+
+- **Conversation Trees**: Similar to OpenAI, uses parent-child relationships for branching
+- **Current Path**: The `currentId` field indicates the active conversation path
+- **Model Information**: Includes model name and usage statistics
+- **Unix Timestamps**: Timestamps in seconds since epoch
+- **Rich Metadata**: Supports model usage data, completion status, and more
+
+### Processing
+
+The parser:
+
+1. Follows the `currentId` path backwards to the root
+2. Extracts messages from the message object map
+3. Preserves model, usage, and status information in metadata
+4. Converts Unix timestamps to JavaScript Date objects
+
 ## Normalized Format (Internal & Export)
 
-Both OpenAI and Claude formats are converted to a common internal structure. This is also the format used when exporting conversations from this app.
+All formats (OpenAI, Claude, and Z.ai) are converted to a common internal structure. This is also the format used when exporting conversations from this app.
 
 ### Internal Structure (with Date objects)
 
@@ -131,7 +200,7 @@ Both OpenAI and Claude formats are converted to a common internal structure. Thi
   title: string,           // Conversation title
   created: Date,           // Creation timestamp (Date object)
   updated: Date,           // Last update timestamp (Date object)
-  format: 'openai' | 'claude',  // Source format
+  format: 'openai' | 'claude' | 'zai',  // Source format
   summary?: string,        // Optional conversation summary (Claude only)
   messages: [
     {
@@ -140,10 +209,13 @@ Both OpenAI and Claude formats are converted to a common internal structure. Thi
       content: string,     // Message text content
       timestamp: Date,     // Message timestamp (Date object)
       metadata: {
-        model?: string,    // Model used (OpenAI only)
+        model?: string,    // Model used (OpenAI, Z.ai)
+        models?: string[], // Available models (Z.ai)
         attachments?: [],  // Attachments (Claude only)
         files?: [],        // File metadata (Claude only)
-        status?: string    // Message status (OpenAI only)
+        status?: string,   // Message status (OpenAI, Z.ai)
+        done?: boolean,    // Completion status (Z.ai)
+        usage?: object     // Token usage stats (Z.ai)
         // ... other format-specific data
       }
     }
@@ -191,7 +263,7 @@ Conversations exported from this app can be seamlessly re-imported:
 1. The format is automatically detected as `'normalized'`
 2. ISO 8601 timestamp strings are converted back to Date objects
 3. All metadata is preserved exactly as it was
-4. The original source format (`openai` or `claude`) is maintained
+4. The original source format (`openai`, `claude`, or `zai`) is maintained
 
 This allows for:
 - Backing up conversations
@@ -222,7 +294,8 @@ The app automatically detects the format by examining the JSON structure:
 1. **Normalized Detection**: Checks for `id`, `messages`, `format`, `created`, and `updated` fields
 2. **OpenAI Detection**: Checks for `mapping` and `current_node` fields
 3. **Claude Detection**: Checks for `chat_messages` and `uuid` fields
-4. **Fallback**: Shows error if format is unrecognized
+4. **Z.ai Detection**: Checks for `chat.history.messages` and `chat.history.currentId` fields
+5. **Fallback**: Shows error if format is unrecognized
 
 Detection is performed in this order to ensure exported conversations are correctly identified before checking for original formats.
 

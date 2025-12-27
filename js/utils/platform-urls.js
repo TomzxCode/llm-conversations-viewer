@@ -30,7 +30,8 @@ export function getPlatformUrl(conversation) {
 export function getPlatformName(format) {
     const names = {
         'openai': 'ChatGPT',
-        'claude': 'Claude'
+        'claude': 'Claude',
+        'zai': 'Z.ai'
     };
     return names[format] || 'Unknown Platform';
 }

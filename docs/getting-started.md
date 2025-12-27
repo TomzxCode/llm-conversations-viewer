@@ -1,6 +1,6 @@
 # Getting Started
 
-This guide will help you start using LLM Conversations Viewer to browse your ChatGPT and Claude conversation exports.
+This guide will help you start using LLM Conversations Viewer to browse your ChatGPT, Claude, and Z.ai conversation exports.
 
 ## Installation
 
@@ -10,7 +10,7 @@ This is a client-side web application that runs entirely in your browser.
 ### Prerequisites
 
 - A modern web browser (Chrome, Firefox, Safari, or Edge)
-- Conversation export files from ChatGPT or Claude
+- Conversation export files from ChatGPT, Claude, or Z.ai
 
 ## Exporting Conversations
 
@@ -29,6 +29,15 @@ This is a client-side web application that runs entirely in your browser.
 3. Click **Export Data**
 4. Wait for the email with your data export
 5. Download the ZIP file
+
+### From Z.ai
+
+1. Click on your profile in the top right
+2. Select **Settings** → **Dialogue** → **Export Chats**
+3. The conversations will be exported and a download will start automatically
+
+!!! note "Z.ai Export Format"
+    Z.ai exports conversations in a JSON format that includes conversation trees, model information, and usage statistics. The viewer automatically detects and parses this format.
 
 ## Loading Conversations
 
@@ -87,6 +96,7 @@ Once you've viewed a conversation, you can continue it on its original platform:
 3. Click the button to open the conversation in a new tab on the original platform:
    - **OpenAI conversations** open at `https://chatgpt.com/c/{conversation-id}`
    - **Claude conversations** open at `https://claude.ai/chat/{conversation-id}`
+   - **Z.ai conversations** - Platform URL support coming soon
 
 !!! tip "Quick Platform Access"
     The "Continue conversation" button provides a fast way to jump from reviewing historical conversations back to actively working on them in ChatGPT or Claude.

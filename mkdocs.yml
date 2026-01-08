@@ -51,6 +51,17 @@ nav:
   - Developer Guide:
     - Architecture: architecture.md
     - Development: development.md
+  - Specifications:
+    - Overview: spec/README.md
+    - Conversation Parsing: spec/conversation-parsing.md
+    - File Import: spec/file-import.md
+    - Storage: spec/storage.md
+    - Sidebar UI: spec/sidebar-ui.md
+    - Chat View: spec/chat-view.md
+    - Export: spec/export.md
+    - State Management: spec/state-management.md
+    - Markdown Rendering: spec/markdown-rendering.md
+    - Platform Integration: spec/platform-integration.md
 
 markdown_extensions:
   - pymdownx.highlight:
